@@ -1,6 +1,10 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Award, CheckCircle, ExternalLink } from 'lucide-react';
+import nptelImg from '../assets/NPTEL.png';
+import ibmImg from '../assets/IBM.png';
+import googleImg from '../assets/Google.png';
+import oopsImg from '../assets/oops.png';
 
 const certs = [
   {
@@ -10,6 +14,7 @@ const certs = [
     color: '#f59e0b',
     issuerColor: '#fbbf24',
     badge: 'NPTEL',
+    image: nptelImg,
     year: '2024',
     skills: ['Cloud Architecture', 'AWS Basics', 'Deployment'],
     link: 'https://drive.google.com/file/d/1BNezNp4j-7o4a8o1F3CG7iiRcLp9XG6R/view',
@@ -21,6 +26,7 @@ const certs = [
     color: '#818cf8',
     issuerColor: '#a5b4fc',
     badge: 'IBM',
+    image: ibmImg,
     year: '2024',
     skills: ['Hardware', 'OS Concepts', 'File Systems'],
     link: 'https://www.coursera.org/account/accomplishments/verify/IQFSVGP9BOJE',
@@ -32,6 +38,7 @@ const certs = [
     color: '#38bdf8',
     issuerColor: '#7dd3fc',
     badge: 'Google',
+    image: googleImg,
     year: '2024',
     skills: ['TCP/IP', 'DNS', 'Protocols'],
     link: 'https://www.coursera.org/account/accomplishments/verify/G0L3YK73E4U6',
@@ -43,6 +50,7 @@ const certs = [
     color: '#34d399',
     issuerColor: '#6ee7b7',
     badge: 'C++',
+    image: oopsImg,
     year: '2024',
     skills: ['OOP', 'C++', 'Inheritance'],
     link: 'https://drive.google.com/file/d/1jtwNlQYv1aRY9B66IJuP926QfxfuKSsB/view',
@@ -93,18 +101,33 @@ export default function Certifications() {
               />
 
               <div className="relative z-10">
+                {/* Certificate image thumbnail */}
+                {cert.image && (
+                  <div className="relative rounded-xl overflow-hidden mb-5 group/thumb" style={{ aspectRatio: '4/3' }}>
+                    <img
+                      src={cert.image}
+                      alt={`${cert.title} certificate`}
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover/thumb:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute top-2 right-2">
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold"
+                        style={{ background: `${cert.color}25`, color: cert.color, border: `1px solid ${cert.color}40` }}>
+                        <CheckCircle size={8} /> Verified
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Header row */}
-                <div className="flex items-start justify-between mb-5">
+                <div className="flex items-start justify-between mb-4">
                   <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-[11px] font-black transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-[10px] font-black transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
                     style={{ background: `${cert.color}15`, color: cert.color, border: `1px solid ${cert.color}30` }}
                   >
                     {cert.badge}
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle size={14} style={{ color: cert.color }} />
-                    <span className="text-[11px] font-semibold" style={{ color: cert.color }}>Verified</span>
-                  </div>
+                  <span className="text-[11px] font-semibold" style={{ color: cert.issuerColor }}>{cert.year}</span>
                 </div>
 
                 <h3 className="text-white font-bold text-[15px] leading-snug mb-1">{cert.title}</h3>

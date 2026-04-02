@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 export default function CursorFollower() {
@@ -23,11 +23,18 @@ export default function CursorFollower() {
     // Hide on mobile
     if (window.matchMedia('(pointer: coarse)').matches) return;
 
+    // rAF-throttled mousemove — avoids flooding motion values every pixel
+    let rafPending = false;
+    let lastX = -100, lastY = -100;
     const move = (e) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-      dotX.set(e.clientX);
-      dotY.set(e.clientY);
+      lastX = e.clientX; lastY = e.clientY;
+      if (rafPending) return;
+      rafPending = true;
+      requestAnimationFrame(() => {
+        cursorX.set(lastX); cursorY.set(lastY);
+        dotX.set(lastX);    dotY.set(lastY);
+        rafPending = false;
+      });
     };
 
     const onEnter = () => setHidden(false);
@@ -35,24 +42,25 @@ export default function CursorFollower() {
     const onDown = () => setClicked(true);
     const onUp = () => setClicked(false);
 
-    // Detect hoverable elements
-    const addHover = () => {
-      document.querySelectorAll('a, button, [role="button"], input, textarea, select, label').forEach(el => {
-        el.addEventListener('mouseenter', () => setHovered(true));
-        el.addEventListener('mouseleave', () => setHovered(false));
-      });
+    // Use event delegation instead of attaching to every element
+    const onMouseOver = (e) => {
+      if (e.target.closest('a, button, [role="button"], input, textarea, select, label')) {
+        setHovered(true);
+      }
+    };
+    const onMouseOut = (e) => {
+      if (e.target.closest('a, button, [role="button"], input, textarea, select, label')) {
+        setHovered(false);
+      }
     };
 
-    window.addEventListener('mousemove', move);
+    window.addEventListener('mousemove', move, { passive: true });
     document.addEventListener('mouseenter', onEnter);
     document.addEventListener('mouseleave', onLeave);
     window.addEventListener('mousedown', onDown);
     window.addEventListener('mouseup', onUp);
-
-    addHover();
-    // Re-run on DOM changes (for dynamic content)
-    const observer = new MutationObserver(addHover);
-    observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener('mouseover', onMouseOver);
+    document.addEventListener('mouseout', onMouseOut);
 
     // Hide default cursor
     document.body.style.cursor = 'none';
@@ -63,7 +71,8 @@ export default function CursorFollower() {
       document.removeEventListener('mouseleave', onLeave);
       window.removeEventListener('mousedown', onDown);
       window.removeEventListener('mouseup', onUp);
-      observer.disconnect();
+      document.removeEventListener('mouseover', onMouseOver);
+      document.removeEventListener('mouseout', onMouseOut);
       document.body.style.cursor = '';
     };
   }, [cursorX, cursorY, dotX, dotY]);
@@ -81,6 +90,7 @@ export default function CursorFollower() {
           y: springY,
           translateX: '-50%',
           translateY: '-50%',
+          willChange: 'transform',
         }}
         animate={{
           opacity: hidden ? 0 : 1,
@@ -115,6 +125,7 @@ export default function CursorFollower() {
           y: dotSpringY,
           translateX: '-50%',
           translateY: '-50%',
+          willChange: 'transform',
         }}
         animate={{
           opacity: hidden ? 0 : 1,

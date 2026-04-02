@@ -9,6 +9,7 @@ export default function WeatherEffect({ mode, dark = true }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let animId;
+    let paused = false;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -16,6 +17,10 @@ export default function WeatherEffect({ mode, dark = true }) {
     };
     resize();
     window.addEventListener('resize', resize, { passive: true });
+
+    // Pause rAF when tab is hidden
+    const onVisibility = () => { paused = document.hidden; };
+    document.addEventListener('visibilitychange', onVisibility);
 
     // ── Snow ────────────────────────────────────────────────
     if (mode === 'snow') {
@@ -29,6 +34,7 @@ export default function WeatherEffect({ mode, dark = true }) {
         wobble: Math.random() * Math.PI * 2,
       }));
       const draw = () => {
+        if (paused) { animId = requestAnimationFrame(draw); return; }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         flakes.forEach(f => {
           f.wobble += 0.02;
@@ -40,8 +46,7 @@ export default function WeatherEffect({ mode, dark = true }) {
           ctx.beginPath();
           ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(200,220,255,${f.opacity})`;
-          ctx.shadowBlur = 6; ctx.shadowColor = 'rgba(180,210,255,0.6)';
-          ctx.fill(); ctx.shadowBlur = 0;
+          ctx.fill();
         });
         animId = requestAnimationFrame(draw);
       };
@@ -62,6 +67,7 @@ export default function WeatherEffect({ mode, dark = true }) {
         width: dark ? Math.random() * 0.8 + 0.3 : Math.random() * 1.2 + 0.6,
       }));
       const draw = () => {
+        if (paused) { animId = requestAnimationFrame(draw); return; }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drops.forEach(d => {
           d.y += d.speed; d.x -= d.speed * 0.15;
@@ -96,6 +102,7 @@ export default function WeatherEffect({ mode, dark = true }) {
       let lastTime = performance.now();
 
       const draw = (now) => {
+        if (paused) { animId = requestAnimationFrame(draw); return; }
         const dt = now - lastTime; lastTime = now; elapsed += dt;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -156,6 +163,7 @@ export default function WeatherEffect({ mode, dark = true }) {
         color: colorPool[Math.floor(Math.random() * colorPool.length)],
       }));
       const draw = () => {
+        if (paused) { animId = requestAnimationFrame(draw); return; }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         flies.forEach(f => {
           f.phase += f.speed;
@@ -170,9 +178,7 @@ export default function WeatherEffect({ mode, dark = true }) {
           ctx.beginPath();
           ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(${f.color},${alpha})`;
-          ctx.shadowBlur = dark ? 12 + glow * 14 : 16 + glow * 10;
-          ctx.shadowColor = `rgba(${f.color},${dark ? 0.8 : 1})`;
-          ctx.fill(); ctx.shadowBlur = 0;
+          ctx.fill();
         });
         animId = requestAnimationFrame(draw);
       };
@@ -198,6 +204,7 @@ export default function WeatherEffect({ mode, dark = true }) {
       let lastTime = performance.now();
 
       const draw = (now) => {
+        if (paused) { animId = requestAnimationFrame(draw); return; }
         const dt = now - lastTime; lastTime = now; elapsed += dt;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -250,6 +257,7 @@ export default function WeatherEffect({ mode, dark = true }) {
       const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ0123456789ABCDEF</>{}[]';
 
       const draw = () => {
+        if (paused) { animId = requestAnimationFrame(draw); return; }
         ctx.fillStyle = 'rgba(2,8,23,0.06)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         drops.forEach((y, i) => {
@@ -297,13 +305,13 @@ export default function WeatherEffect({ mode, dark = true }) {
         ctx.bezierCurveTo(size / 2, -size / 2, size / 2, size / 2, 0, size / 2);
         ctx.bezierCurveTo(-size / 2, size / 2, -size / 2, -size / 2, 0, -size / 2);
         ctx.fillStyle = color;
-        ctx.shadowBlur = 4; ctx.shadowColor = color;
-        ctx.fill(); ctx.shadowBlur = 0;
+        ctx.fill();
         ctx.globalAlpha = 1;
         ctx.restore();
       };
 
       const draw = () => {
+        if (paused) { animId = requestAnimationFrame(draw); return; }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         leaves.forEach(l => {
           l.wobble += 0.03;
@@ -321,6 +329,7 @@ export default function WeatherEffect({ mode, dark = true }) {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [mode]);
 

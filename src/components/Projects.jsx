@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { Github, ExternalLink, Monitor, Dumbbell, Star, GitFork, BookOpen, ArrowUpRight, Users, Code2 } from 'lucide-react';
 import TiltCard from './TiltCard';
+import corewatchImg from '../assets/corewatch.png';
+import trainxImg from '../assets/trainX.png';
 
 const projects = [
   {
@@ -10,6 +12,7 @@ const projects = [
     subtitle: 'Real-Time System Monitoring Dashboard',
     category: 'fullstack',
     icon: Monitor,
+    image: corewatchImg,
     color: '#818cf8',
     accentColor: '#6366f1',
     mockupBg: 'from-indigo-950/80 to-slate-950/80',
@@ -30,6 +33,7 @@ const projects = [
     subtitle: 'Virtual Trainer Platform',
     category: 'frontend',
     icon: Dumbbell,
+    image: trainxImg,
     color: '#34d399',
     accentColor: '#22c55e',
     mockupBg: 'from-green-950/80 to-slate-950/80',
@@ -186,39 +190,32 @@ function GitHubCard({ inView }) {
 
 function MockupPreview({ project }) {
   return (
-    <div className={`bg-gradient-to-br ${project.mockupBg} rounded-xl p-5 mb-6 relative overflow-hidden min-h-[120px] flex items-center justify-center`}>
-      <div className="absolute top-3 left-3 flex gap-1.5">
-        <div className="w-2 h-2 rounded-full bg-white/10" />
-        <div className="w-2 h-2 rounded-full bg-white/10" />
-        <div className="w-2 h-2 rounded-full bg-white/10" />
+    <div className="relative rounded-xl overflow-hidden mb-6 group/preview bg-slate-900/60" style={{ aspectRatio: '16/9' }}>
+      {/* Screenshot */}
+      <img
+        src={project.image}
+        alt={`${project.title} preview`}
+        className="w-full h-full object-contain transition-transform duration-700 group-hover/preview:scale-105"
+      />
+      {/* Overlay with stats on hover */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover/preview:opacity-100 transition-opacity duration-300 flex items-end p-4">
+        <div className="flex gap-2">
+          {project.stats.map(s => (
+            <div key={s.label} className="glass rounded-lg px-2.5 py-1.5 text-center">
+              <div className="text-xs font-bold" style={{ color: project.color }}>{s.value}</div>
+              <div className="text-[9px] text-slate-400">{s.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="absolute top-3 right-3 flex gap-2">
-        {project.stats.map(s => (
-          <div key={s.label} className="glass rounded-lg px-2 py-1 text-center">
-            <div className="text-xs font-bold" style={{ color: project.color }}>{s.value}</div>
-            <div className="text-[9px] text-slate-600">{s.label}</div>
-          </div>
-        ))}
-      </div>
-      <motion.div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center"
-        style={{ background: `${project.color}15`, border: `1px solid ${project.color}30` }}
-        animate={{ y: [0, -6, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-      >
-        <project.icon size={30} style={{ color: project.color }} />
-      </motion.div>
-      <div className="absolute bottom-3 left-3 right-3 flex items-end gap-1 h-8">
-        {[40, 65, 45, 80, 55, 70, 50, 85, 60, 75].map((h, i) => (
-          <motion.div
-            key={i}
-            className="flex-1 rounded-sm"
-            style={{ background: `${project.color}30` }}
-            initial={{ height: 0 }}
-            animate={{ height: `${h}%` }}
-            transition={{ delay: i * 0.05, duration: 0.5 }}
-          />
-        ))}
+      {/* Browser chrome bar */}
+      <div className="absolute top-0 left-0 right-0 h-6 bg-black/60 backdrop-blur-sm flex items-center px-2.5 gap-1.5">
+        <div className="w-2 h-2 rounded-full bg-red-500/70" />
+        <div className="w-2 h-2 rounded-full bg-yellow-500/70" />
+        <div className="w-2 h-2 rounded-full bg-green-500/70" />
+        <div className="flex-1 mx-2 h-3 rounded bg-white/10 flex items-center px-2">
+          <span className="text-[8px] text-slate-500 truncate">{project.demo}</span>
+        </div>
       </div>
     </div>
   );
@@ -226,18 +223,18 @@ function MockupPreview({ project }) {
 
 function ProjectCard({ project, inView, index }) {
   return (
-    <TiltCard intensity={8}>
+    <TiltCard intensity={8} className="h-full">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={inView ? { opacity: 1, y: 0 } : {}}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.55, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
-        className="glass-strong rounded-3xl overflow-hidden card-hover group relative"
+        className="glass-strong rounded-3xl overflow-hidden card-hover group relative h-full flex flex-col"
       >
       <div className="absolute top-0 left-0 right-0 h-[2px]"
         style={{ background: `linear-gradient(90deg, transparent, ${project.color}, transparent)` }}
       />
-      <div className="p-7">
+      <div className="p-7 flex flex-col flex-1">
         <MockupPreview project={project} />
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -273,7 +270,7 @@ function ProjectCard({ project, inView, index }) {
             </span>
           ))}
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-auto">
           <motion.a href={project.github} target="_blank" rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold text-slate-400 border border-white/8 hover:border-white/15 hover:text-white transition-all"
             whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -341,7 +338,7 @@ export default function Projects() {
 
         {/* Main layout: project cards left, GitHub card right */}
         <div className="grid lg:grid-cols-3 gap-7 items-start">
-          <div className="lg:col-span-2 grid md:grid-cols-2 gap-7">
+          <div className="lg:col-span-2 grid md:grid-cols-2 gap-7 items-stretch">
             <AnimatePresence mode="wait">
               {filtered.map((project, i) => (
                 <ProjectCard key={project.id} project={project} inView={inView} index={i} />

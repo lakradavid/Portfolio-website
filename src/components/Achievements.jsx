@@ -1,6 +1,9 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Star, Trophy, Zap, ExternalLink } from 'lucide-react';
+import hackerrankImg from '../assets/Hackerrank.png';
+import codechefImg from '../assets/codechef.png';
+import codolioImg from '../assets/Codolio.png';
 
 const achievements = [
   {
@@ -12,6 +15,7 @@ const achievements = [
     color: '#34d399',
     metric: '5★',
     metricLabel: 'Rating',
+    image: hackerrankImg,
     link: null,
   },
   {
@@ -23,6 +27,7 @@ const achievements = [
     color: '#f59e0b',
     metric: '2500',
     metricLabel: 'Points',
+    image: codechefImg,
     link: null,
   },
   {
@@ -34,6 +39,7 @@ const achievements = [
     color: '#818cf8',
     metric: 'View',
     metricLabel: 'Profile',
+    image: codolioImg,
     link: 'https://codolio.com/profile/David22/card',
   },
 ];
@@ -83,35 +89,39 @@ export default function Achievements() {
               />
 
               <div className="relative z-10">
-                {/* Platform badge */}
-                <div className="flex items-center justify-between mb-5">
-                  <div
-                    className="px-3 py-1 rounded-full text-[11px] font-bold"
-                    style={{ background: `${ach.platformColor}15`, color: ach.platformColor, border: `1px solid ${ach.platformColor}25` }}
-                  >
-                    {ach.platform}
+                {/* Platform heading above image */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <motion.div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${ach.color}12`, border: `1px solid ${ach.color}25` }}
+                      whileHover={{ rotate: 8, scale: 1.1 }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                    >
+                      <ach.icon size={16} style={{ color: ach.color }} />
+                    </motion.div>
+                    <div>
+                      <h3 className="text-white font-bold text-[15px] leading-none">{ach.platform}</h3>
+                      <p className="text-slate-500 text-[11px] mt-0.5">{ach.title}</p>
+                    </div>
                   </div>
-                  {/* Metric */}
                   <div className="text-right">
-                    <div className="text-2xl font-black" style={{ color: ach.color }}>{ach.metric}</div>
+                    <div className="text-xl font-black leading-none" style={{ color: ach.color }}>{ach.metric}</div>
                     <div className="text-[10px] text-slate-600">{ach.metricLabel}</div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <motion.div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: `${ach.color}12`, border: `1px solid ${ach.color}25` }}
-                    whileHover={{ rotate: 8, scale: 1.1 }}
-                    transition={{ type: 'spring', stiffness: 300 }}
-                  >
-                    <ach.icon size={26} style={{ color: ach.color }} />
-                  </motion.div>
-                  <div>
-                    <h3 className="text-white font-bold text-base mb-2 leading-snug">{ach.title}</h3>
-                    <p className="text-slate-500 text-[13px] leading-relaxed">{ach.desc}</p>
-                  </div>
+                {/* Image thumbnail */}
+                <div className="relative rounded-xl overflow-hidden mb-5 bg-slate-900/60" style={{ aspectRatio: '16/9' }}>
+                  <img
+                    src={ach.image}
+                    alt={`${ach.platform} achievement`}
+                    className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
                 </div>
+
+                <p className="text-slate-500 text-[13px] leading-relaxed mb-1">{ach.desc}</p>
 
                 {/* Progress bar decoration */}
                 <div className="mt-5 pt-4 border-t border-white/5">

@@ -8,6 +8,25 @@ const highlights = [
   { icon: Award, label: 'Status', value: 'Pursuing', color: '#34d399' },
 ];
 
+const schoolRecords = [
+  {
+    level: 'Intermediate (Class XII)',
+    school: "St Paul's School",
+    location: 'Rourkela, Odisha',
+    percentage: '78.25%',
+    period: 'Apr 2021 – Mar 2022',
+    color: '#818cf8',
+  },
+  {
+    level: 'Matriculation (Class X)',
+    school: "St Paul's School",
+    location: 'Rourkela, Odisha',
+    percentage: '78.20%',
+    period: 'Apr 2019 – Mar 2020',
+    color: '#38bdf8',
+  },
+];
+
 export default function Education() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: '-80px' });
@@ -31,11 +50,12 @@ export default function Education() {
         </motion.div>
 
         <div className="max-w-3xl mx-auto">
+          {/* University card */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-strong rounded-3xl p-8 gradient-border card-hover relative overflow-hidden group"
+            className="glass-strong rounded-3xl p-8 gradient-border card-hover relative overflow-hidden group mb-6"
           >
             {/* Top accent */}
             <div className="absolute top-0 left-0 right-0 h-[2px]"
@@ -103,6 +123,48 @@ export default function Education() {
               </div>
             </div>
           </motion.div>
+
+          {/* School cards */}
+          <div className="grid md:grid-cols-2 gap-5">
+            {schoolRecords.map((s, i) => (
+              <motion.div
+                key={s.level}
+                initial={{ opacity: 0, y: 30 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.25 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                className="glass-strong rounded-2xl p-6 card-hover relative overflow-hidden group"
+              >
+                <div className="absolute top-0 left-0 right-0 h-[2px]"
+                  style={{ background: `linear-gradient(90deg, transparent, ${s.color}, transparent)` }}
+                />
+                <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl pointer-events-none"
+                  style={{ background: `${s.color}15` }}
+                />
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${s.color}18`, border: `1px solid ${s.color}30` }}>
+                      <GraduationCap size={20} style={{ color: s.color }} />
+                    </div>
+                    <div className="glass rounded-xl px-3 py-2 text-center flex-shrink-0">
+                      <div className="text-lg font-black leading-none" style={{ color: s.color }}>{s.percentage}</div>
+                      <div className="text-[9px] text-slate-500 font-semibold uppercase tracking-wider mt-0.5">Score</div>
+                    </div>
+                  </div>
+                  <h3 className="text-white font-black text-[15px] mb-0.5">{s.school}</h3>
+                  <p className="text-[13px] font-semibold mb-3" style={{ color: s.color }}>{s.level}</p>
+                  <div className="flex flex-col gap-1.5 text-[12px] text-slate-500">
+                    <span className="flex items-center gap-1.5">
+                      <MapPin size={11} style={{ color: s.color }} /> {s.location}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Calendar size={11} className="text-sky-400" /> {s.period}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

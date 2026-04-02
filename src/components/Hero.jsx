@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Mail, Phone, ArrowDown, Download, ExternalLink, Sparkles } from 'lucide-react';
-import profilePhoto from '../assets/IMG_20240204_131336_107.jpg';
+import profilePhoto from '../assets/profile photo.jpg';
 import { useTheme } from '../App';
 import MagneticButton from './MagneticButton';
 
@@ -21,20 +21,32 @@ function AuroraBackground() {
     window.addEventListener('mousemove', onMove, { passive: true });
 
     let animId;
+    let visible = true;
+
     const tick = () => {
-      // Lerp toward mouse
-      current.current.x += (mouse.current.x - current.current.x) * 0.04;
-      current.current.y += (mouse.current.y - current.current.y) * 0.04;
-      if (ref.current) {
-        ref.current.style.setProperty('--mx', current.current.x);
-        ref.current.style.setProperty('--my', current.current.y);
+      if (visible) {
+        current.current.x += (mouse.current.x - current.current.x) * 0.04;
+        current.current.y += (mouse.current.y - current.current.y) * 0.04;
+        if (ref.current) {
+          ref.current.style.setProperty('--mx', current.current.x);
+          ref.current.style.setProperty('--my', current.current.y);
+        }
       }
       animId = requestAnimationFrame(tick);
     };
     tick();
+
+    // Pause when Hero is scrolled out of view
+    const observer = new IntersectionObserver(
+      ([entry]) => { visible = entry.isIntersecting; },
+      { threshold: 0 }
+    );
+    if (ref.current) observer.observe(ref.current.closest('section') || ref.current);
+
     return () => {
       window.removeEventListener('mousemove', onMove);
       cancelAnimationFrame(animId);
+      observer.disconnect();
     };
   }, []);
 
@@ -60,6 +72,7 @@ function ParticleCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let animId;
+    let visible = true;
 
     const resize = () => {
       canvas.width = canvas.offsetWidth;
@@ -67,6 +80,13 @@ function ParticleCanvas() {
     };
     resize();
     window.addEventListener('resize', resize, { passive: true });
+
+    // Pause when scrolled away
+    const observer = new IntersectionObserver(
+      ([entry]) => { visible = entry.isIntersecting; },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
 
     const COLORS = ['#6366f1', '#38bdf8', '#22c55e', '#a78bfa'];
     class Particle {
@@ -97,35 +117,58 @@ function ParticleCanvas() {
       }
     }
 
-    const particles = Array.from({ length: 100 }, () => new Particle());
+    // Reduced from 100 to 55 particles for perf
+    const particles = Array.from({ length: 55 }, () => new Particle());
 
+    // Spatial grid for O(n) connection checks instead of O(n²)
+    const CELL = 90;
     const drawConnections = () => {
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < 90) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(99,102,241,${0.06 * (1 - d / 90)})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
+      const cols = Math.ceil(canvas.width / CELL) + 1;
+      const grid = new Map();
+      particles.forEach((p, idx) => {
+        const cx = Math.floor(p.x / CELL);
+        const cy = Math.floor(p.y / CELL);
+        const key = cx + cy * cols;
+        if (!grid.has(key)) grid.set(key, []);
+        grid.get(key).push(idx);
+      });
+      particles.forEach((p, i) => {
+        const cx = Math.floor(p.x / CELL);
+        const cy = Math.floor(p.y / CELL);
+        for (let dx = -1; dx <= 1; dx++) {
+          for (let dy = -1; dy <= 1; dy++) {
+            const neighbors = grid.get((cx + dx) + (cy + dy) * cols);
+            if (!neighbors) continue;
+            neighbors.forEach(j => {
+              if (j <= i) return;
+              const ddx = p.x - particles[j].x;
+              const ddy = p.y - particles[j].y;
+              const d2 = ddx * ddx + ddy * ddy;
+              if (d2 < 8100) { // 90²
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.strokeStyle = `rgba(99,102,241,${0.06 * (1 - Math.sqrt(d2) / 90)})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+              }
+            });
           }
         }
-      }
+      });
     };
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => { p.update(); p.draw(); });
-      drawConnections();
+      if (visible) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        drawConnections();
+      }
       animId = requestAnimationFrame(animate);
     };
     animate();
 
-    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', resize); };
+    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', resize); observer.disconnect(); };
   }, []);
 
   return <canvas ref={canvasRef} id="particles-canvas" style={{ width: '100%', height: '100%' }} />;
